@@ -268,21 +268,13 @@ body {
   font-size: 1rem;
 }
 
-.header {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-
 .configure-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
+  flex: 0 0 auto;
   padding: 0;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -379,9 +371,6 @@ body {
   </head>
   <body>
     <div class="layout">
-      <header class="header">
-        <button type="button" id="configureBtn" class="configure-btn" aria-label="Configure spin duration" title="Configure">⚙️</button>
-      </header>
       <div class="app-split">
         <main class="wheel-panel">
           <div class="wheel-area">
@@ -403,6 +392,7 @@ body {
             <div class="names-actions">
               <button type="button" id="refreshBtn" class="btn">Refresh</button>
               <button type="button" id="saveBtn" class="btn primary">Save</button>
+              <button type="button" id="configureBtn" class="configure-btn" aria-label="Configure spin duration" title="Configure">⚙️</button>
             </div>
           </div>
         </aside>
