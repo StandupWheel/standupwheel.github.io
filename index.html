@@ -268,10 +268,120 @@ body {
   font-size: 1rem;
 }
 
+.header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.configure-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+}
+
+.configure-btn:hover {
+  border-color: var(--muted);
+  background: var(--surface);
+}
+
+.configure-btn:active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b1020;
+}
+
+.config-dialog {
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+  max-width: min(94vw, 400px);
+  width: min(94vw, 400px);
+}
+
+.config-dialog::backdrop {
+  background: rgba(5, 8, 12, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.config-dialog__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+  padding: 1.85rem 2rem 2rem;
+  margin: 0;
+}
+
+.config-dialog__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.config-dialog__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.config-dialog__label {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.config-dialog__input {
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.config-dialog__input:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.config-dialog__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.config-dialog__actions .btn {
+  min-width: 6.5rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.95rem;
+}
+
 </style>
   </head>
   <body>
     <div class="layout">
+      <header class="header">
+        <button type="button" id="configureBtn" class="configure-btn" aria-label="Configure spin duration" title="Configure">⚙️</button>
+      </header>
       <div class="app-split">
         <main class="wheel-panel">
           <div class="wheel-area">
@@ -308,6 +418,19 @@ body {
         </div>
       </form>
     </dialog>
+    <dialog id="configDialog" class="config-dialog" aria-labelledby="configDialogTitle">
+      <form method="dialog" class="config-dialog__form">
+        <h2 id="configDialogTitle" class="config-dialog__title">Configure Spin Duration</h2>
+        <div class="config-dialog__group">
+          <label class="config-dialog__label" for="spinDurationInput">Spin Duration (seconds)</label>
+          <input type="number" id="spinDurationInput" class="config-dialog__input" min="1" max="10" step="0.1" />
+        </div>
+        <div class="config-dialog__actions">
+          <button type="button" class="btn" id="configCancelBtn">Cancel</button>
+          <button type="button" class="btn primary" id="configSaveBtn">Save</button>
+        </div>
+      </form>
+    </dialog>
     <script>
 globalThis.__WHEEL_DEFAULT__ = {"spinDurationSeconds":3,"spinSpeed":2,"names":["James","Sophia","Michael","Emma","David"]};
 const NAMES_CACHE_KEY = "wheel.namesCache.v1";
@@ -322,6 +445,11 @@ const refreshBtn = document.getElementById("refreshBtn");
 const saveBtn = document.getElementById("saveBtn");
 const resultDialog = document.getElementById("resultDialog");
 const resultDialogName = document.getElementById("resultDialogName");
+const configureBtn = document.getElementById("configureBtn");
+const configDialog = document.getElementById("configDialog");
+const spinDurationInput = document.getElementById("spinDurationInput");
+const configCancelBtn = document.getElementById("configCancelBtn");
+const configSaveBtn = document.getElementById("configSaveBtn");
 
 let spinDurationMs = 3000;
 /** Minimum full 360° rotations during a spin; higher = faster rotation for the same duration. */
@@ -744,6 +872,44 @@ window.addEventListener("resize", () => {
   if (!spinning) drawWheel();
 });
 
+function openConfigDialog() {
+  spinDurationInput.value = (spinDurationMs / 1000).toString();
+  configDialog.showModal();
+}
+
+function saveSpinDuration() {
+  const value = parseFloat(spinDurationInput.value);
+  if (!Number.isFinite(value) || value < 1 || value > 10) {
+    alert("Please enter a value between 1 and 10 seconds");
+    return;
+  }
+  spinDurationMs = value * 1000;
+  localStorage.setItem("wheel.spinDurationMs.v1", spinDurationMs.toString());
+  configDialog.close();
+}
+
+function loadSpinDurationFromStorage() {
+  const stored = localStorage.getItem("wheel.spinDurationMs.v1");
+  if (stored) {
+    const value = parseFloat(stored);
+    if (Number.isFinite(value) && value > 0) {
+      spinDurationMs = value;
+    }
+  }
+}
+
+configureBtn.addEventListener("click", openConfigDialog);
+configCancelBtn.addEventListener("click", () => configDialog.close());
+configSaveBtn.addEventListener("click", saveSpinDuration);
+spinDurationInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    saveSpinDuration();
+  } else if (e.key === "Escape") {
+    configDialog.close();
+  }
+});
+
+loadSpinDurationFromStorage();
 initFromCacheOrConfig();
 
 </script>
