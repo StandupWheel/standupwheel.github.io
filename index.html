@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Name wheel</title>
+    <title>Standup Wheel</title>
     <style>
 :root {
   --bg: #0f1218;
@@ -48,6 +48,173 @@ body {
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border);
+}
+
+.links-panel {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  width: 3.5rem;
+  transition: width 0.2s ease;
+  overflow: hidden;
+}
+
+.links-panel.links-panel--expanded {
+  width: clamp(220px, 26vw, 320px);
+}
+
+.links-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0.5rem;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.2rem;
+  flex: 0 0 auto;
+}
+
+.links-toggle-btn:hover {
+  border-color: var(--muted);
+}
+
+.links-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0 0.75rem 0.75rem;
+  min-width: clamp(220px, 26vw, 320px);
+  flex: 1;
+  min-height: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.links-panel--expanded .links-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.links-title {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.links-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.links-empty {
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 0.4rem 0;
+}
+
+.link-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.link-item--editing {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.link-item__link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.link-item__link:hover {
+  text-decoration: underline;
+}
+
+.link-item__actions {
+  display: flex;
+  gap: 0.25rem;
+  flex: 0 0 auto;
+}
+
+.link-item__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.link-item__icon-btn:hover {
+  border-color: var(--muted);
+}
+
+.link-item__input {
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.links-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--border);
+}
+
+.links-add-form input {
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.links-add-form input:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 1px;
 }
 
 .config-side {
@@ -209,6 +376,16 @@ body {
   #namesInput {
     resize: vertical;
     max-height: 28vh;
+  }
+
+  .links-panel.links-panel--expanded {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: min(80vw, 320px);
+    z-index: 10;
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -372,6 +549,18 @@ body {
   <body>
     <div class="layout">
       <div class="app-split">
+        <aside class="links-panel" id="linksPanel">
+          <button type="button" id="linksToggleBtn" class="links-toggle-btn" aria-expanded="false" aria-controls="linksContent" title="Toggle links">🔗</button>
+          <div class="links-content" id="linksContent">
+            <h2 class="links-title">Links</h2>
+            <ul class="links-list" id="linksList"></ul>
+            <form class="links-add-form" id="linksAddForm">
+              <input type="text" id="linkTitleInput" placeholder="Title" autocomplete="off" />
+              <input type="text" id="linkUrlInput" placeholder="https://example.com" autocomplete="off" />
+              <button type="submit" class="btn primary">Add link</button>
+            </form>
+          </div>
+        </aside>
         <main class="wheel-panel">
           <div class="wheel-area">
             <div class="wheel-wrap">
@@ -379,7 +568,7 @@ body {
                 id="wheelCanvas"
                 width="720"
                 height="720"
-                aria-label="Name wheel. Click to spin."
+                aria-label="Standup Wheel. Click to spin."
               ></canvas>
               <div class="pointer" aria-hidden="true"></div>
             </div>
@@ -426,6 +615,7 @@ globalThis.__WHEEL_DEFAULT__ = {"spinDurationSeconds":3,"spinSpeed":2,"names":["
 const NAMES_CACHE_KEY = "wheel.namesCache.v1";
 /** Removed UI spin cache; strip if still present. */
 const LEGACY_SPIN_DURATION_CACHE_KEY = "wheel.spinDurationSec.v1";
+const LINKS_CACHE_KEY = "wheel.linksCache.v1";
 
 const canvas = document.getElementById("wheelCanvas");
 const wheelWrap = document.querySelector(".wheel-wrap");
@@ -440,6 +630,12 @@ const configDialog = document.getElementById("configDialog");
 const spinDurationInput = document.getElementById("spinDurationInput");
 const configCancelBtn = document.getElementById("configCancelBtn");
 const configSaveBtn = document.getElementById("configSaveBtn");
+const linksPanel = document.getElementById("linksPanel");
+const linksToggleBtn = document.getElementById("linksToggleBtn");
+const linksList = document.getElementById("linksList");
+const linksAddForm = document.getElementById("linksAddForm");
+const linkTitleInput = document.getElementById("linkTitleInput");
+const linkUrlInput = document.getElementById("linkUrlInput");
 
 let spinDurationMs = 3000;
 /** Minimum full 360° rotations during a spin; higher = faster rotation for the same duration. */
@@ -900,8 +1096,156 @@ spinDurationInput.addEventListener("keydown", (e) => {
   }
 });
 
+/** @typedef {{ id: string, title: string, url: string }} LinkEntry */
+/** @type {LinkEntry[]} */
+let links = [];
+
+/** @returns {LinkEntry[]} */
+function readLinksFromCache() {
+  try {
+    const raw = localStorage.getItem(LINKS_CACHE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (l) => l && typeof l.id === "string" && typeof l.title === "string" && typeof l.url === "string"
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writeLinksToCache(list) {
+  localStorage.setItem(LINKS_CACHE_KEY, JSON.stringify(list));
+}
+
+/** Adds https:// if the entry has no scheme. */
+function normalizeLinkUrl(url) {
+  return /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(url) ? url : `https://${url}`;
+}
+
+function renderLinks() {
+  linksList.innerHTML = "";
+  if (links.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "links-empty";
+    empty.textContent = "No links yet";
+    linksList.appendChild(empty);
+    return;
+  }
+  for (const link of links) {
+    const li = document.createElement("li");
+    li.className = "link-item";
+    li.dataset.id = link.id;
+
+    const a = document.createElement("a");
+    a.className = "link-item__link";
+    a.href = link.url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = link.title;
+    a.title = link.url;
+
+    const actions = document.createElement("div");
+    actions.className = "link-item__actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "link-item__icon-btn";
+    editBtn.title = "Edit";
+    editBtn.textContent = "✏️";
+    editBtn.addEventListener("click", () => startEditLink(link.id));
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "link-item__icon-btn";
+    removeBtn.title = "Remove";
+    removeBtn.textContent = "🗑️";
+    removeBtn.addEventListener("click", () => removeLink(link.id));
+
+    actions.append(editBtn, removeBtn);
+    li.append(a, actions);
+    linksList.appendChild(li);
+  }
+}
+
+function startEditLink(id) {
+  const link = links.find((l) => l.id === id);
+  const li = linksList.querySelector(`[data-id="${id}"]`);
+  if (!link || !li) return;
+  li.innerHTML = "";
+  li.classList.add("link-item--editing");
+
+  const titleInput = document.createElement("input");
+  titleInput.type = "text";
+  titleInput.className = "link-item__input";
+  titleInput.value = link.title;
+
+  const urlInput = document.createElement("input");
+  urlInput.type = "text";
+  urlInput.className = "link-item__input";
+  urlInput.value = link.url;
+
+  const actions = document.createElement("div");
+  actions.className = "link-item__actions";
+
+  const saveEditBtn = document.createElement("button");
+  saveEditBtn.type = "button";
+  saveEditBtn.className = "link-item__icon-btn";
+  saveEditBtn.title = "Save";
+  saveEditBtn.textContent = "✅";
+  saveEditBtn.addEventListener("click", () => {
+    const newTitle = titleInput.value.trim();
+    const newUrl = urlInput.value.trim();
+    if (!newTitle || !newUrl) return;
+    link.title = newTitle;
+    link.url = normalizeLinkUrl(newUrl);
+    writeLinksToCache(links);
+    renderLinks();
+  });
+
+  const cancelEditBtn = document.createElement("button");
+  cancelEditBtn.type = "button";
+  cancelEditBtn.className = "link-item__icon-btn";
+  cancelEditBtn.title = "Cancel";
+  cancelEditBtn.textContent = "✖️";
+  cancelEditBtn.addEventListener("click", () => renderLinks());
+
+  actions.append(saveEditBtn, cancelEditBtn);
+  li.append(titleInput, urlInput, actions);
+}
+
+function removeLink(id) {
+  links = links.filter((l) => l.id !== id);
+  writeLinksToCache(links);
+  renderLinks();
+}
+
+function initLinksPanel() {
+  links = readLinksFromCache();
+  renderLinks();
+
+  linksToggleBtn.addEventListener("click", () => {
+    const expanded = linksPanel.classList.toggle("links-panel--expanded");
+    linksToggleBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+  });
+
+  linksAddForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const title = linkTitleInput.value.trim();
+    const url = linkUrlInput.value.trim();
+    if (!title || !url) return;
+    const id = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+    links.push({ id, title, url: normalizeLinkUrl(url) });
+    writeLinksToCache(links);
+    renderLinks();
+    linksAddForm.reset();
+    linkTitleInput.focus();
+  });
+}
+
 loadSpinDurationFromStorage();
 initFromCacheOrConfig();
+initLinksPanel();
 
 </script>
   </body>
