@@ -752,15 +752,16 @@ async function loadConfig() {
 async function refreshFromConfig() {
   if (spinning || pendingSpinResult) return;
   try {
-    const list = await loadConfig();
-    clearNamesCache();
+    const cached = readNamesFromCache();
+    const list = cached ?? (await loadConfig());
+    if (!cached) await loadSpinSettingsFromConfig();
     setNamesTextarea(list);
     names = list;
     rotationRad = 0;
     updateControls();
     drawWheel();
   } catch {
-    /* config load failed */
+    /* load failed */
   }
 }
 
